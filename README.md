@@ -1,74 +1,44 @@
-# Image Fixer
+# Sahayak
 
-The product data is now loading correctly: the page shows 3 of 3 products.
-
-However, all 3 product images are broken/missing in the frontend. I can open the stored image URL directly in my browser and see the actual image, so the images exist and Supabase Storage is working.
-
-Do NOT change my database, RLS policies, tables, products, or Storage files.
-
-Please debug only the frontend image rendering.
-
-Check src/lib/products.ts and src/routes/index.tsx.
-
-Important:
-
-1. Inspect the actual values returned from product_images for:
-
-   - storage_path
-
-   - image_url
-
-   - is_primary
-
-   - display_order
-
-2. Log the exact final image URL that is being passed to the <img> element.
-
-3. Compare that URL with the image_url stored in my product_images table.
-
-4. Check whether publicImageUrl(storage_path) is constructing the correct URL for the `product-images` bucket.
-
-5. Do NOT assume storage_path is the same as image_url.
-
-6. If image_url contains a valid public Supabase Storage URL and storage_path produces an incorrect URL, use the valid database image_url as the image source.
-
-7. If storage_path produces the correct URL, continue using storage_path.
-
-8. Do not hardcode any image URL.
-
-9. Handle all products dynamically.
-
-10. Keep support for multiple images.
-
-11. Add an image onError handler that logs the failed URL to the console.
-
-12. Verify that the final <img src=""> URL actually opens and displays the image.
-
-13. Do not use placeholder/mock images.
-
-14. Do not change the visual design.
-
-After fixing it, tell me:
-
-- the exact image URL the frontend was generating
-
-- why it was failing
-
-- the exact files changed
-
-- what the final image URL now comes from
-
-This project was built with [Lovable](https://lovable.dev).
+Sahayak is a curated showcase for handmade crafts — clay, bamboo and handwoven goods shaped by artisans in small batches, never mass produced. Every piece lists its material, craft type, price and current stock, so you can find something made to be lived with.
 
 **Live app**: https://render-fixer-friend.lovable.app
 
-## Build with Lovable
+## Features
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c37f1c6d-8e8e-45ae-b980-0799baa8fd54).
+- **Product catalogue** — published products are fetched live from the database, sorted newest first.
+- **Multiple images per product** — a primary image is shown first, with full support for additional product photos.
+- **Resilient image loading** — image URLs are sanitized and normalized before rendering (stray characters are stripped, and stored URLs are verified to point at this project's storage host); any image that fails to load logs its URL to the console.
+- **Live stock and details** — each item displays its material, craft type, price and current stock quantity.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Tech stack
+
+- [TanStack Start](https://tanstack.com/start) v1 (React 19, Vite) — full-stack framework with file-based routing
+- [TanStack Query](https://tanstack.com/query) — data fetching and caching
+- [Tailwind CSS](https://tailwindcss.com) v4 + shadcn/ui components
+- [Supabase](https://supabase.com) — PostgreSQL database and Storage for product images (`product-images` bucket)
+
+## Project structure
+
+```
+src/
+├── routes/
+│   ├── __root.tsx        # Root layout, fonts, global metadata
+│   └── index.tsx         # Home page — product catalogue
+├── lib/
+│   ├── supabase.ts       # Supabase client + project URL
+│   ├── products.ts       # Product/image types, fetching, image URL resolution
+│   └── utils.ts          # Shared utilities
+├── components/           # UI components (shadcn/ui)
+└── styles.css            # Tailwind v4 theme and design tokens
+```
+
+## How product data flows
+
+1. The home page fetches all `products` with `status = 'published'`.
+2. For those products, matching rows from `product_images` are fetched (`storage_path`, `image_url`, `is_primary`, `display_order`).
+3. Each image URL is resolved by preferring a valid stored `image_url` (only if it points at this project's storage host), otherwise deriving the public URL from `storage_path` in the `product-images` bucket.
+4. Images are sorted primary-first, then by `display_order`.
 
 ## Development
 
@@ -80,3 +50,13 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+Then open the local dev server URL printed in the terminal.
+
+## Build with Lovable
+
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c37f1c6d-8e8e-45ae-b980-0799baa8fd54).
+
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
